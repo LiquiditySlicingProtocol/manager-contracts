@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.12;
 
+import "@openzeppelin/contracts/access/Ownable2Step.sol";
 import "./interfaces/ICoupon.sol";
 import "./library/EIP712.sol";
 import "./library/ERC1155.sol";
-import "./utils/Ownable.sol";
 import "./utils/SignatureVerification.sol";
 
-contract Coupons is ICoupon, EIP712, ERC1155, Ownable {
+contract Coupons is ICoupon, EIP712, ERC1155, Ownable2Step {
     using SignatureVerification for bytes;
 
     bytes32 public constant _CLAIM_REQUEST_TYPEHASH =
