@@ -139,11 +139,11 @@ contract LspManagerV2 is
         PoolInfo storage p = _getPool(chainId, host);
 
         address relayer = getRelayer();
-        address tokenWrapper = IRelayer(relayer).getTokenWrapper(chainId);
-        IERC20(tokenWrapper).safeTransferFrom(msg.sender, address(this), amount);
-        IERC20(tokenWrapper).safeIncreaseAllowance(relayer, amount);
+        amount = _sendNativeToken(relayer, chainId, amount);
 
         uint256 fee = _computeWithdrawFee(chainId, amount);
+        require(amount > fee, "!Fee");
+
         bytes memory payload = abi.encodeWithSignature(
             "withdraw(bytes32,uint256)",
             target,
@@ -175,13 +175,7 @@ contract LspManagerV2 is
         }
 
         address relayer = getRelayer();
-        address tokenWrapper = IRelayer(relayer).getTokenWrapper(chainId);
-        IERC20(tokenWrapper).safeTransferFrom(
-            msg.sender,
-            address(this),
-            amount
-        );
-        IERC20(tokenWrapper).safeIncreaseAllowance(relayer, amount);
+        amount = _sendNativeToken(relayer, chainId, amount);
 
         bytes memory payload = abi.encodeWithSignature(
             "deposit(bytes32,bytes32,uint256)",
@@ -382,5 +376,22 @@ contract LspManagerV2 is
 
         DepositPool storage $p = _getPoolDeposit(chainId, pool);
         _refund($p, amount);
+    }
+
+    function _sendNativeToken(address relayer, uint16 chainId, uint256 amount) internal returns (uint256) {
+        address tokenWrapper = IRelayer(relayer).getTokenWrapper(chainId);
+
+        uint256 balanceBefore = IERC20(tokenWrapper).balanceOf(address(this));
+        IERC20(tokenWrapper).safeTransferFrom(
+            msg.sender,
+            address(this),
+            amount
+        );
+        uint256 balanceAfter = IERC20(tokenWrapper).balanceOf(address(this));
+
+        amount = balanceAfter - balanceBefore;
+        IERC20(tokenWrapper).safeIncreaseAllowance(relayer, amount);
+
+        return amount;
     }
 }
