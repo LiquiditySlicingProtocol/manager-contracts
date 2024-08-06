@@ -9,7 +9,6 @@ import {IShare} from "./interfaces/IShare.sol";
 import {ICoupon} from "./interfaces/ICoupon.sol";
 import {MarketV2Base} from "./MarketV2Base.sol";
 import {SafeERC20} from "./utils/SafeERC20.sol";
-import {SafeMath} from "./utils/SafeMath.sol";
 
 error InvalidAmount(uint256 amount, uint256 minUnit);
 error InsufficientShare(uint256 available);
@@ -19,7 +18,6 @@ error ListingOffSale(uint256 id);
 
 contract MarketV2 is MarketV2Base, AccessManagedUpgradeable {
     using SafeERC20 for IERC20;
-    using SafeMath for uint256;
 
     /**
      * @dev called by DiamondCut function
@@ -102,7 +100,7 @@ contract MarketV2 is MarketV2Base, AccessManagedUpgradeable {
         if (amount < list.minUnit || amount % list.minUnit != 0)
             revert InvalidAmount(amount, list.minUnit);
 
-        uint256 price = list.unitPrice.mul(amount.div(list.minUnit));
+        uint256 price = list.unitPrice * (amount / list.minUnit);
         uint256 buyFee_ = _computeFee(list.buyFee, price);
         address coupons = getCoupons();
         if (buyFee_ > 0) {

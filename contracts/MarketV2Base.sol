@@ -2,11 +2,8 @@
 pragma solidity ^0.8.20;
 
 import {IMarket} from "./interfaces/IMarket.sol";
-import {SafeMath} from "./utils/SafeMath.sol";
 
 abstract contract MarketV2Base is IMarket {
-    using SafeMath for uint256;
-
     /// @custom:storage-location erc7201:lsp.market.storage.Market
     struct MarketStorage {
         address manager;
@@ -48,7 +45,7 @@ abstract contract MarketV2Base is IMarket {
     ) internal pure returns (uint256) {
         (uint256 fee, uint8 decimals) = _getFee(base);
         if (decimals > 0) {
-            return value.mul(fee).div(10 ** decimals);
+            return value * fee / (10 ** decimals);
         } else {
             return fee;
         }

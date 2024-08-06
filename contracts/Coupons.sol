@@ -5,11 +5,9 @@ import "./interfaces/ICoupon.sol";
 import "./library/EIP712.sol";
 import "./library/ERC1155.sol";
 import "./utils/Ownable.sol";
-import "./utils/SafeMath.sol";
 import "./utils/SignatureVerification.sol";
 
 contract Coupons is ICoupon, EIP712, ERC1155, Ownable {
-    using SafeMath for uint256;
     using SignatureVerification for bytes;
 
     bytes32 public constant _CLAIM_REQUEST_TYPEHASH =
@@ -173,7 +171,7 @@ contract Coupons is ICoupon, EIP712, ERC1155, Ownable {
         uint8 decimals = uint8(base & uint256(_decimalsMask));
         uint64 discount = base >> 8;
         if (decimals > 0) {
-            checked = price - price.mul(discount).div(10 ** decimals);
+            checked = price - price * discount / (10 ** decimals);
         } else {
             checked = price - discount;
         }

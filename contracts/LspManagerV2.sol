@@ -9,7 +9,6 @@ import {IRelayer} from "./interfaces/IRelayer.sol";
 import {PoolV2} from "./PoolV2.sol";
 import {LspManagerV2Base} from "./LspManagerV2Base.sol";
 import {SafeERC20} from "./utils/SafeERC20.sol";
-import {SafeMath} from "./utils/SafeMath.sol";
 
 /**
  * @title LspManagerV2
@@ -22,7 +21,6 @@ contract LspManagerV2 is
     IShare
 {
     using SafeERC20 for IERC20;
-    using SafeMath for uint256;
 
     /**
      * @notice Sets the relayer address.

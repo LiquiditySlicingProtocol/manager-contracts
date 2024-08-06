@@ -1,11 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {SafeMath} from "./utils/SafeMath.sol";
-
 abstract contract LspManagerV2Base {
-    using SafeMath for uint256;
-
     /// @custom:storage-location erc7201:lsp.storage.Manager
     struct ManagerStorage {
         address _relayer;
@@ -103,7 +99,7 @@ abstract contract LspManagerV2Base {
     function _computeWithdrawFee(uint16 chainId, uint256 value) internal view returns (uint256) {
         (uint256 fee, uint8 decimals) = withdrawFee(chainId);
         if (decimals > 0) {
-            return value.mul(fee).div(10 ** decimals);
+            return value * fee / (10 ** decimals);
         } else {
             return fee;
         }
