@@ -2,12 +2,13 @@
 pragma solidity ^0.8.12;
 
 import "@openzeppelin/contracts/access/Ownable2Step.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 import "./interfaces/ICoupon.sol";
 import "./library/EIP712.sol";
 import "./library/ERC1155.sol";
 import "./utils/SignatureVerification.sol";
 
-contract Coupons is ICoupon, EIP712, ERC1155, Ownable2Step {
+contract Coupons is ICoupon, EIP712, ERC1155, Ownable2Step, Pausable {
     using SignatureVerification for bytes;
 
     bytes32 public constant _CLAIM_REQUEST_TYPEHASH =
@@ -54,6 +55,7 @@ contract Coupons is ICoupon, EIP712, ERC1155, Ownable2Step {
         address initialOwner,
         string memory baseURI
     ) Ownable(initialOwner) EIP712("LspCoupon") {
+        _pause();
         _setBaseURI(baseURI);
     }
 
@@ -215,6 +217,32 @@ contract Coupons is ICoupon, EIP712, ERC1155, Ownable2Step {
             bytes(tokenURI).length > 0
                 ? string.concat(_baseURI, tokenURI)
                 : _baseURI;
+    }
+
+    /**
+     * @inheritdoc ERC1155
+     */
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 id,
+        uint256 amount,
+        bytes calldata data
+    ) public override whenNotPaused {
+        super.safeTransferFrom(from ,to, id, amount, data);
+    }
+
+    /**
+     * @inheritdoc ERC1155
+     */
+    function safeBatchTransferFrom(
+        address from,
+        address to,
+        uint256[] calldata ids,
+        uint256[] calldata amounts,
+        bytes calldata data
+    ) public override whenNotPaused {
+        super.safeBatchTransferFrom(from, to, ids, amounts, data);
     }
 
     /**
