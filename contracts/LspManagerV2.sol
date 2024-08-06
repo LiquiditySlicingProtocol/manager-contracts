@@ -140,8 +140,8 @@ contract LspManagerV2 is
 
         address relayer = getRelayer();
         address tokenWrapper = IRelayer(relayer).getTokenWrapper(chainId);
-        IERC20(tokenWrapper).transferFrom(msg.sender, address(this), amount);
-        IERC20(tokenWrapper).approve(relayer, amount);
+        IERC20(tokenWrapper).safeTransferFrom(msg.sender, address(this), amount);
+        IERC20(tokenWrapper).safeIncreaseAllowance(relayer, amount);
 
         uint256 fee = _computeWithdrawFee(chainId, amount);
         bytes memory payload = abi.encodeWithSignature(
