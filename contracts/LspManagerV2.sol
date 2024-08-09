@@ -278,7 +278,7 @@ contract LspManagerV2 is
 
         // 产生代币
         address tokenWrapper = IRelayer(getRelayer()).getTokenWrapper(chainId);
-        IERC20(tokenWrapper).transfer(owner, amount);
+        IERC20(tokenWrapper).safeTransfer(owner, amount);
 
         emit TokenRelease(chainId, pool, owner, amount);
     }
@@ -305,7 +305,7 @@ contract LspManagerV2 is
 
         // 产生代币
         address tokenWrapper = IRelayer(getRelayer()).getTokenWrapper(chainId);
-        IERC20(tokenWrapper).transfer(msg.sender, amount);
+        IERC20(tokenWrapper).safeTransfer(msg.sender, amount);
 
         emit GetReward(chainId, pool, msg.sender, amount);
     }
