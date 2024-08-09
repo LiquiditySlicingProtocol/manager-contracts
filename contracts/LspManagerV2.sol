@@ -22,6 +22,11 @@ contract LspManagerV2 is
 {
     using SafeERC20 for IERC20;
 
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+      _disableInitializers();
+    }
+
     /**
      * @notice Sets the relayer address.
      * @dev Restricted to certain roles.

@@ -19,6 +19,11 @@ error ListingOffSale(uint256 id);
 contract MarketV2 is MarketV2Base, AccessManagedUpgradeable {
     using SafeERC20 for IERC20;
 
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() {
+      _disableInitializers();
+    }
+
     /**
      * @dev called by DiamondCut function
      */
