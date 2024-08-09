@@ -59,11 +59,9 @@ interface IMarket {
      * @notice Makes an order for a listing.
      * @param id The index of the listing.
      * @param amount The amount to buy.
-     * @param couponId The coupon ID to use for the purchase.
      */
     function makeOrder(
         uint256 id,
-        uint256 amount,
-        uint256 couponId
+        uint256 amount
     ) external;
 }

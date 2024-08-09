@@ -8,7 +8,6 @@ abstract contract MarketV2Base is IMarket {
     struct MarketStorage {
         address manager;
         address payment;
-        address coupons;
         uint256 listFee;
         uint256 buyFee;
         List[] lists;
@@ -106,11 +105,6 @@ abstract contract MarketV2Base is IMarket {
         $.payment = token;
     }
 
-    function _setCoupons(address newCoupons) internal {
-        MarketStorage storage $ = _getMarketStorage();
-        $.coupons = newCoupons;
-    }
-
     function _setListFee(uint256 value) internal {
         MarketStorage storage $ = _getMarketStorage();
         _verifyFee(value);
@@ -131,11 +125,6 @@ abstract contract MarketV2Base is IMarket {
     function getPayment() public view returns (address) {
         MarketStorage storage $ = _getMarketStorage();
         return $.payment;
-    }
-
-    function getCoupons() public view returns (address) {
-        MarketStorage storage $ = _getMarketStorage();
-        return $.coupons;
     }
 
     function getList(uint256 id) public view returns (List memory) {

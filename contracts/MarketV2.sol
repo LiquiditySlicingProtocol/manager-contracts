@@ -96,7 +96,7 @@ contract MarketV2 is MarketV2Base, AccessManagedUpgradeable {
         emit CancelList(id);
     }
 
-    function makeOrder(uint256 id, uint256 amount, uint256 couponId) external {
+    function makeOrder(uint256 id, uint256 amount) external {
         List storage list = _getList(id);
 
         if (list.status != uint8(ListStatus.OnSale)) revert ListingOffSale(id);
@@ -107,14 +107,7 @@ contract MarketV2 is MarketV2Base, AccessManagedUpgradeable {
 
         uint256 price = list.unitPrice * (amount / list.minUnit);
         uint256 buyFee_ = _computeFee(list.buyFee, price);
-        address coupons = getCoupons();
         if (buyFee_ > 0) {
-            if (
-                coupons != address(0) &&
-                ICoupon(coupons).hasCoupon(msg.sender, couponId)
-            ) {
-                buyFee_ = ICoupon(coupons).computeDiscount(couponId, buyFee_);
-            }
             IERC20(getPayment()).safeTransferFrom(
                 msg.sender,
                 address(this),
@@ -124,12 +117,6 @@ contract MarketV2 is MarketV2Base, AccessManagedUpgradeable {
 
         uint256 listFee_ = _computeFee(list.listFee, price);
         if (listFee_ > 0) {
-            if (
-                coupons != address(0) &&
-                ICoupon(coupons).hasCoupon(list.seller, couponId)
-            ) {
-                listFee_ = ICoupon(coupons).computeDiscount(couponId, listFee_);
-            }
             IERC20(getPayment()).safeTransferFrom(
                 msg.sender,
                 address(this),
@@ -169,10 +156,6 @@ contract MarketV2 is MarketV2Base, AccessManagedUpgradeable {
 
     function setPayment(address token) public restricted {
         _setPayment(token);
-    }
-
-    function setCoupons(address newCoupons) public restricted {
-        _setCoupons(newCoupons);
     }
 
     function setListFee(uint256 value) public restricted {
