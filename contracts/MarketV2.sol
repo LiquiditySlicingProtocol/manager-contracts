@@ -38,6 +38,15 @@ contract MarketV2 is MarketV2Base, AccessManagedUpgradeable {
         _setBuyFee(buyFee_);
     }
 
+    /**
+     * @dev Restricted to Importer Contract.
+     */
+    function importLists(List[] calldata data) external restricted {
+        for (uint256 i = 0; i < data.length; i++) {
+            _importList(data[i]);
+        }
+    }
+
     function addList(ListRequest calldata data) external {
         require(data.minUnit != 0);
         require(data.unitPrice != 0);

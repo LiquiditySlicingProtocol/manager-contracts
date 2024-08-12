@@ -31,6 +31,24 @@ abstract contract DepositV2 is IDeposit {
     }
 
     /**
+     * @dev Import the older staking data within a pool.
+     * @param $p Pool data storage
+     * @param owner Address of the user
+     * @param data StakingData of the user
+     */
+    function _import(
+        DepositPool storage $p,
+        address owner,
+        StakingData memory data
+    ) internal {
+        StakingData storage $u = $p.userStakings[owner];
+
+        $u.freezed += data.freezed;
+        $u.actived += data.actived;
+        $u.locked += data.locked;
+    }
+
+    /**
      * @dev Transfers shares from one user to another within a pool.
      * @param $p Pool data storage
      * @param from Address of the sender
@@ -205,10 +223,7 @@ abstract contract DepositV2 is IDeposit {
      * @param $p Pool data storage
      * @param amount Amount of shares to refund
      */
-    function _refund(
-        DepositPool storage $p,
-        uint256 amount
-    ) internal {
+    function _refund(DepositPool storage $p, uint256 amount) internal {
         // Calculate the amount of shares to release based on the current pool shares
         uint256 unlocked = FullMath.mulDiv(amount, magnitude, $p.total);
         $p.unlocked += unlocked; // User's released tokens = current unlocked amount * (user's current stake / total stake)
@@ -231,7 +246,10 @@ abstract contract DepositV2 is IDeposit {
      * @param pool The address of the pool.
      * @return The deposit pool data.
      */
-    function _getPoolDeposit(uint16 chainId, bytes32 pool) internal view returns (DepositPool storage) {
+    function _getPoolDeposit(
+        uint16 chainId,
+        bytes32 pool
+    ) internal view returns (DepositPool storage) {
         DepositStorage storage $ = getDepositStorage();
         return $.poolDeposits[chainId][pool];
     }
@@ -242,7 +260,10 @@ abstract contract DepositV2 is IDeposit {
      * @param pool The address of the pool.
      * @return The deposit pool data.
      */
-    function getPoolDeposit(uint16 chainId, bytes32 pool) public view returns (uint256, uint256, uint256) {
+    function getPoolDeposit(
+        uint16 chainId,
+        bytes32 pool
+    ) public view returns (uint256, uint256, uint256) {
         DepositStorage storage $ = getDepositStorage();
         DepositPool storage p = $.poolDeposits[chainId][pool];
         return (p.total, p.totalDividend, p.unlocked);
@@ -255,7 +276,11 @@ abstract contract DepositV2 is IDeposit {
      * @param owner The address of the user.
      * @return The staking data for the user.
      */
-    function getUserStaking(uint16 chainId, bytes32 pool, address owner) public view returns (StakingData memory) {
+    function getUserStaking(
+        uint16 chainId,
+        bytes32 pool,
+        address owner
+    ) public view returns (StakingData memory) {
         DepositStorage storage $ = getDepositStorage();
         DepositPool storage p = $.poolDeposits[chainId][pool];
 

@@ -107,6 +107,17 @@ abstract contract MarketV2Base is IMarket {
         emit NewList(msg.sender, list.pool, id);
     }
 
+    function _importList(List memory list) internal {
+        MarketStorage storage $ = _getMarketStorage();
+
+        require(list.status == uint8(ListStatus.OnSale), "!OffSale");
+        require(list.seller != address(0), "!Invalid");
+
+        $.lists.push(list);
+        uint256 id = $.lists.length;
+        $.userList[list.seller].push(id);
+    }
+
     function _setManager(address newManager) internal {
         require(newManager != address(0));
         MarketStorage storage $ = _getMarketStorage();

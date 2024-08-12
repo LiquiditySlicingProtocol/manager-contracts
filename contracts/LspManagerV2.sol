@@ -143,6 +143,28 @@ contract LspManagerV2 is
         emit TokenIncrease(chainId, owner, amount);
     }
 
+    /**
+     * @notice Registers an external address for a pool.
+     * @dev Restricted to Importer Contract.
+     * @param chainId The ID of the blockchain.
+     * @param pool The address of the pool.
+     * @param users Array of the imported user address.
+     * @param data Array of the imported staking data.
+     */
+    function importDepositData(
+        uint16 chainId,
+        bytes32 pool,
+        address[] calldata users,
+        StakingData[] calldata data
+    ) external restricted {
+        require(data.length == users.length, "!Mismatch");
+        DepositPool storage $p = _getPoolDeposit(chainId, pool);
+
+        for (uint256 i = 0; i < users.length; i++) {
+            _import($p, users[i], data[i]);
+        }
+    }
+
     /// @inheritdoc LspManagerV2Base
     function withdraw(
         uint16 chainId,
