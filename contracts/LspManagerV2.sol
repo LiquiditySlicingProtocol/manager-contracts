@@ -48,6 +48,15 @@ contract LspManagerV2 is
     }
 
     /**
+     * @notice Force stop the manager in dangerous.
+     * @dev Restricted to certain roles.
+     * @param status The status of the pause.
+     */
+    function setManagerPause(bool status) external restricted {
+        _setPause(status);
+    }
+
+    /**
      * @notice Sets the withdraw fee for a specific chainId.
      * @dev Restricted to certain roles.
      * @param chainId The ID of the blockchain.
@@ -140,7 +149,7 @@ contract LspManagerV2 is
         bytes32 host,
         bytes32 target,
         uint256 amount
-    ) external override {
+    ) external override whenNotPaused {
         PoolInfo storage p = _getPool(chainId, host);
 
         address relayer = getRelayer();
@@ -170,7 +179,7 @@ contract LspManagerV2 is
         uint16 chainId,
         bytes32 pool,
         uint256 amount
-    ) external {
+    ) external whenNotPaused {
         PoolInfo storage p = _getPool(chainId, pool);
         if (!_checkState(p._state, AS_DELEGATOR))
             revert NonDelegatedPool(chainId, pool);
@@ -230,7 +239,7 @@ contract LspManagerV2 is
         uint16 chainId,
         bytes32 pool,
         uint256 amount
-    ) external {
+    ) external whenNotPaused {
         PoolInfo storage p = _getPool(chainId, pool);
         if (!_checkState(p._state, AS_DELEGATOR))
             revert NonDelegatedPool(chainId, pool);
@@ -293,7 +302,7 @@ contract LspManagerV2 is
      * @param chainId The ID of the blockchain.
      * @param pool The address of the pool.
      */
-    function withdrawReward(uint16 chainId, bytes32 pool) external {
+    function withdrawReward(uint16 chainId, bytes32 pool) external whenNotPaused {
         PoolInfo storage p = _getPool(chainId, pool);
         if (_checkState(p._state, AUTO_DEPOSIT)) {
             return;

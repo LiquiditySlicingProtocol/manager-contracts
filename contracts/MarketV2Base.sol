@@ -10,6 +10,7 @@ abstract contract MarketV2Base is IMarket {
         address payment;
         uint256 listFee;
         uint256 buyFee;
+        bool paused;
         List[] lists;
         mapping(address => uint256[]) userList;
     }
@@ -20,6 +21,19 @@ abstract contract MarketV2Base is IMarket {
 
     /// @notice Mask for decimals extraction
     uint8 internal constant _decimalsMask = 0xff;
+
+    modifier whenNotPaused() {
+        require(paused(), "!Paused");
+        _;
+    }
+
+    /**
+     * @dev Returns true if the contract is paused, and false otherwise.
+     */
+    function paused() public view returns (bool) {
+        MarketStorage storage $ = _getMarketStorage();
+        return $.paused;
+    }
 
     function _getMarketStorage()
         internal
@@ -44,7 +58,7 @@ abstract contract MarketV2Base is IMarket {
     ) internal pure returns (uint256) {
         (uint256 fee, uint8 decimals) = _getFee(base);
         if (decimals > 0) {
-            return value * fee / (10 ** decimals);
+            return (value * fee) / (10 ** decimals);
         } else {
             return fee;
         }
@@ -58,15 +72,15 @@ abstract contract MarketV2Base is IMarket {
     function _verifyFee(uint256 value) internal pure {
         // Extract the number of decimal places from the value
         uint8 decimals = uint8(value & uint256(_decimalsMask));
-        
+
         // Check if the number of decimal places is within the allowed range (0-30)
         require(decimals <= 30, "!Large");
-        
+
         // If the number of decimal places is greater than 0, further verify the fee value
         if (decimals > 0) {
             // Extract the actual fee value
             uint256 fee = value >> 8;
-            
+
             // Check if the fee is within the allowed range
             require(fee <= 10 ** (decimals + 2), "!Large");
         }
@@ -115,6 +129,11 @@ abstract contract MarketV2Base is IMarket {
         MarketStorage storage $ = _getMarketStorage();
         _verifyFee(value);
         $.buyFee = value;
+    }
+
+    function _setPause(bool status) internal {
+        MarketStorage storage $ = _getMarketStorage();
+        $.paused = status;
     }
 
     function getManager() public view returns (address) {

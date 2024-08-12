@@ -6,7 +6,6 @@ import {IERC20} from "./interfaces/IERC20.sol";
 import {IPoolV2} from "./interfaces/IPoolV2.sol";
 import {IDeposit} from "./interfaces/IDeposit.sol";
 import {IShare} from "./interfaces/IShare.sol";
-import {ICoupon} from "./interfaces/ICoupon.sol";
 import {MarketV2Base} from "./MarketV2Base.sol";
 import {SafeERC20} from "./utils/SafeERC20.sol";
 
@@ -96,7 +95,7 @@ contract MarketV2 is MarketV2Base, AccessManagedUpgradeable {
         emit CancelList(id);
     }
 
-    function makeOrder(uint256 id, uint256 amount) external {
+    function makeOrder(uint256 id, uint256 amount) external whenNotPaused {
         List storage list = _getList(id);
 
         if (list.status != uint8(ListStatus.OnSale)) revert ListingOffSale(id);
@@ -164,5 +163,9 @@ contract MarketV2 is MarketV2Base, AccessManagedUpgradeable {
 
     function setBuyFee(uint256 value) public restricted {
         _setBuyFee(value);
+    }
+
+    function setMarketPause(bool status) public restricted {
+        _setPause(status);
     }
 }

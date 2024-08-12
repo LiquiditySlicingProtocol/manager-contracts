@@ -6,6 +6,7 @@ abstract contract LspManagerV2Base {
     struct ManagerStorage {
         address _relayer;
         address _market;
+        bool _paused;
         mapping(uint16 => uint256) _withdrawFee;
     }
 
@@ -22,7 +23,11 @@ abstract contract LspManagerV2Base {
      * @param recipient Address of the recipient
      * @param amount Amount of tokens increased
      */
-    event TokenIncrease(uint16 indexed chainId, address indexed recipient, uint256 amount);
+    event TokenIncrease(
+        uint16 indexed chainId,
+        address indexed recipient,
+        uint256 amount
+    );
 
     /**
      * @dev Event emitted when a withdrawal is made.
@@ -53,6 +58,11 @@ abstract contract LspManagerV2Base {
         _;
     }
 
+    modifier whenNotPaused() {
+        require(paused(), "!Paused");
+        _;
+    }
+
     /**
      * @notice Increases the token balance of a user.
      * @param chainId The ID of the blockchain.
@@ -79,6 +89,14 @@ abstract contract LspManagerV2Base {
         uint256 amount
     ) external virtual;
 
+    /**
+     * @dev Returns true if the contract is paused, and false otherwise.
+     */
+    function paused() public view returns (bool) {
+        ManagerStorage storage $ = _getManagerStorage();
+        return $._paused;
+    }
+
     function _getManagerStorage()
         internal
         pure
@@ -96,10 +114,13 @@ abstract contract LspManagerV2Base {
      * @param value The amount to compute the fee on.
      * @return The computed withdraw fee.
      */
-    function _computeWithdrawFee(uint16 chainId, uint256 value) internal view returns (uint256) {
+    function _computeWithdrawFee(
+        uint16 chainId,
+        uint256 value
+    ) internal view returns (uint256) {
         (uint256 fee, uint8 decimals) = withdrawFee(chainId);
         if (decimals > 0) {
-            return value * fee / (10 ** decimals);
+            return (value * fee) / (10 ** decimals);
         } else {
             return fee;
         }
@@ -113,6 +134,11 @@ abstract contract LspManagerV2Base {
     function _setMarket(address market) internal {
         ManagerStorage storage $ = _getManagerStorage();
         $._market = market;
+    }
+
+    function _setPause(bool status) internal {
+        ManagerStorage storage $ = _getManagerStorage();
+        $._paused = status;
     }
 
     function _setWithdrawFee(uint16 chainId, uint256 value) internal {
@@ -130,9 +156,7 @@ abstract contract LspManagerV2Base {
         return bytes32(uint256(uint160(addr)));
     }
 
-    function fromBytes32Addr(
-        bytes32 bytesAddr
-    ) public pure returns (address) {
+    function fromBytes32Addr(bytes32 bytesAddr) public pure returns (address) {
         if (uint256(bytesAddr) >> 160 != 0) revert("Invalid");
         return address(uint160(uint256(bytesAddr)));
     }
@@ -147,7 +171,9 @@ abstract contract LspManagerV2Base {
         return $._market;
     }
 
-    function withdrawFee(uint16 chainId) public view returns (uint256 fee, uint8 decimals) {
+    function withdrawFee(
+        uint16 chainId
+    ) public view returns (uint256 fee, uint8 decimals) {
         ManagerStorage storage $ = _getManagerStorage();
         uint256 value = $._withdrawFee[chainId];
         decimals = uint8(value & uint256(_decimalsMask));
