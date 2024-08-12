@@ -24,7 +24,7 @@ contract LspManagerV2 is
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
-      _disableInitializers();
+        _disableInitializers();
     }
 
     /**
@@ -160,9 +160,14 @@ contract LspManagerV2 is
         require(data.length == users.length, "!Mismatch");
         DepositPool storage $p = _getPoolDeposit(chainId, pool);
 
+        uint256 total = 0;
         for (uint256 i = 0; i < users.length; i++) {
             _import($p, users[i], data[i]);
+
+            total += data[i].freezed;
         }
+
+        $p.total += total;
     }
 
     /// @inheritdoc LspManagerV2Base
@@ -324,7 +329,10 @@ contract LspManagerV2 is
      * @param chainId The ID of the blockchain.
      * @param pool The address of the pool.
      */
-    function withdrawReward(uint16 chainId, bytes32 pool) external whenNotPaused {
+    function withdrawReward(
+        uint16 chainId,
+        bytes32 pool
+    ) external whenNotPaused {
         PoolInfo storage p = _getPool(chainId, pool);
         if (_checkState(p._state, AUTO_DEPOSIT)) {
             return;
@@ -414,7 +422,11 @@ contract LspManagerV2 is
         _refund($p, amount);
     }
 
-    function _sendNativeToken(address relayer, uint16 chainId, uint256 amount) internal returns (uint256) {
+    function _sendNativeToken(
+        address relayer,
+        uint16 chainId,
+        uint256 amount
+    ) internal returns (uint256) {
         address tokenWrapper = IRelayer(relayer).getTokenWrapper(chainId);
 
         uint256 balanceBefore = IERC20(tokenWrapper).balanceOf(address(this));
