@@ -8,6 +8,7 @@ import {IDeposit} from "./interfaces/IDeposit.sol";
 import {IShare} from "./interfaces/IShare.sol";
 import {MarketV2Base} from "./MarketV2Base.sol";
 import {SafeERC20} from "./utils/SafeERC20.sol";
+import {InitialFacet} from "./utils/InitialFacet.sol";
 
 error InvalidAmount(uint256 amount, uint256 minUnit);
 error InsufficientShare(uint256 available);
@@ -15,11 +16,11 @@ error ListingNotAllowed(uint16 chainId, bytes32 pool);
 error ListingCannotCancel(uint256 id);
 error ListingOffSale(uint256 id);
 
-contract MarketV2 is MarketV2Base, AccessManagedUpgradeable {
+contract MarketV2 is MarketV2Base, AccessManagedUpgradeable, InitialFacet {
     using SafeERC20 for IERC20;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor() {
+    constructor(address diamondCore_) InitialFacet(diamondCore_) {
       _disableInitializers();
     }
 
@@ -31,7 +32,7 @@ contract MarketV2 is MarketV2Base, AccessManagedUpgradeable {
         address token,
         uint256 listFee_,
         uint256 buyFee_
-    ) external {
+    ) external onlyDiamond {
         _setManager(newManager);
         _setPayment(token);
         _setListFee(listFee_);
